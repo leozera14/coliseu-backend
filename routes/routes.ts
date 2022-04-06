@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { login, register } from "../controllers/userController";
-import { createEvent } from "../controllers/eventController";
+import { createEvent, getEventsList } from "../controllers/eventController";
 import { uploadImage, deleteImage } from "../controllers/imageController";
 import multer from "multer";
 
@@ -17,4 +17,5 @@ routes.post("/image", upload.single("image"), uploadImage);
 routes.delete("/image/:hash", deleteImage);
 
 //Events routes
+routes.get("/events/list", getEventsList);
 routes.post("/events/create", createEvent);
