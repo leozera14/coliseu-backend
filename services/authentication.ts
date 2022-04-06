@@ -1,7 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 
-export const getAuthorization = async () => {
+export const getImgurAuthorization = async () => {
   try {
     const requestInfos = {
       refresh_token: `${process.env.IMGUR_REFRESH_TOKEN}`,

@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response) => {
     );
 
     if (rows[0]) {
-      throw new Error("Username already exists, try a new one!");
+      return res.status(400).json("Usuário ja existente, tente novamente!");
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -24,14 +24,14 @@ export const register = async (req: Request, res: Response) => {
       [username, hash],
       (err: any, results: any) => {
         if (err) {
-          throw new Error(err);
+          return res.status(400).json(err);
         }
 
-        res.status(200).json(`User ${username} added successfully!`);
+        res.status(200).json(`Usuário ${username} criado com sucesso!`);
       }
     );
   } catch (error: any) {
-    throw new Error(error);
+    return res.status(400).json(error);
   }
 };
 
@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
     const user = rows[0];
 
     if (!user) {
-      throw new Error("User not found!");
+      throw new Error("Usuário não encontrado!");
     }
 
     bcrypt.compare(password, user.password, (err: any, results: any) => {
@@ -58,14 +58,14 @@ export const login = async (req: Request, res: Response) => {
       if (!results) {
         return res
           .status(400)
-          .json("Incorrect username or password, try again later...");
+          .json("Usuário ou senha incorretos, tente novamente...");
       }
 
       return res
         .status(200)
-        .json(`User ${username} successfully authenticated.`);
+        .json(`Usuário ${username} autenticado com sucesso!`);
     });
   } catch (error: any) {
-    throw new Error(error);
+    return res.status(400).json(error);
   }
 };

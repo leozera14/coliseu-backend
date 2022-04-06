@@ -1,24 +1,25 @@
-import axios from "axios";
 import { Request, Response } from "express";
 import { database } from "../database/connection";
-import { getAuthorization } from "../services/authentication";
 
-export const uploadImage = async (req: Request, res: Response) => {
+export const createEvent = (req: Request, res: Response) => {
   try {
-    const token = await getAuthorization();
+    const { title, description, image_id } = req.body;
 
-    const { buffer }: any = req?.file;
+    console.log(req.body);
 
-    const { data } = await axios.post("https://api.imgur.com/3/image", buffer, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    database.query(
+      "INSERT INTO events(title, description, image_id) VALUES ($1, $2, $3)",
+      [title, description, image_id],
+      (err: any, results: any) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).json(err);
+        }
 
-    return res.status(200).json(data.data);
-  } catch (error: any) {
-    console.log(error);
-
+        res.status(200).json(`Evento ${title} criado com sucesso!`);
+      }
+    );
+  } catch (error) {
     return res.status(400).json(error);
   }
 };
