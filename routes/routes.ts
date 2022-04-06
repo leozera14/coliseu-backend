@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { login, register } from "../controllers/userController";
 import { createEvent } from "../controllers/eventController";
-import { uploadImage } from "../controllers/imageController";
+import { uploadImage, deleteImage } from "../controllers/imageController";
 import multer from "multer";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -14,6 +14,7 @@ routes.post("/user/register", register);
 
 //Images routes
 routes.post("/image", upload.single("image"), uploadImage);
+routes.delete("/image/:hash", deleteImage);
 
 //Events routes
 routes.post("/events/create", createEvent);

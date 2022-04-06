@@ -5,8 +5,6 @@ export const createEvent = (req: Request, res: Response) => {
   try {
     const { title, description, image_id } = req.body;
 
-    console.log(req.body);
-
     database.query(
       "INSERT INTO events(title, description, image_id) VALUES ($1, $2, $3)",
       [title, description, image_id],
