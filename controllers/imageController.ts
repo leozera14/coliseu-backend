@@ -15,21 +15,11 @@ export const uploadImage = async (req: Request, res: Response) => {
       },
     });
 
-    database.query(
-      "INSERT INTO images(imgur_id, delete_hash, imgur_link) VALUES ($1, $2, $3) RETURNING id",
-      [data.data.id, data.data.deletehash, data.data.link],
-      (err: any, results: any) => {
-        if (err) {
-          return res.status(400).json(err);
-        }
-
-        res.status(200).json({
-          id: results.rows[0].id,
-          image_hash: data.data.id,
-          image_link: data.data.link,
-        });
-      }
-    );
+    return res.status(200).json({
+      image_hash: data.data.id,
+      image_delete_hash: data.data.deletehash,
+      image_link: data.data.link,
+    })
   } catch (error: any) {
     return res.status(400).json(error);
   }
