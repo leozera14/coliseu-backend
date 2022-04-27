@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { database } from "../database/connection";
+import { deleteImageFromImgur } from "../utils/deleteImgurImage";
 
 export const getEventsList = (req: Request, res: Response) => {
   try {
@@ -47,15 +48,29 @@ export const deleteEvent = async (req: Request, res: Response) => {
   try {
     const {id} = req.params
 
-    database.query("DELETE FROM events WHERE id = $1", [id], (err: any, results: any) => {
+    database.query('SELECT a.imgur_id FROM images a INNER JOIN events b ON a.event_id = b.id WHERE b.id = $1', [id], async (err: any, results:any) => {
       if (err) {
         return res.status(400).json(err);
       }
 
-      return res.status(200).json(results.rows)
-      
-    });
+      const imgurImageHash = results.rows[0]
 
+      const deleteImageConfirmed = await deleteImageFromImgur(imgurImageHash);
+
+      if(deleteImageConfirmed) {
+        database.query("DELETE FROM events WHERE id = $1", [id], (err: any, results: any) => {
+          if (err) {
+            return res.status(400).json(err);
+          }
+    
+          return res.status(200).json({
+            success: true,
+            message: 'Evento deletado com sucesso!'
+          })
+          
+        });
+      }
+    })
   } catch (error) {
     return res.status(400).json(error);
   }

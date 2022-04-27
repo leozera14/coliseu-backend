@@ -2,6 +2,7 @@ import axios from "axios";
 import { Request, Response } from "express";
 import { database } from "../database/connection";
 import { getImgurAuthorization } from "../services/authentication";
+import { deleteImageFromImgur } from "../utils/deleteImgurImage";
 
 export const uploadImage = async (req: Request, res: Response) => {
   try {
@@ -27,20 +28,11 @@ export const uploadImage = async (req: Request, res: Response) => {
 
 export const deleteImage = async (req: Request, res: Response) => {
   try {
-    const token = await getImgurAuthorization();
-
     const { hash } = req.params;
 
-    const { data } = await axios.delete(
-      `https://api.imgur.com/3/image/${hash}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const deleteImage = await deleteImageFromImgur(hash)
 
-    if (data.success === true && data.status === 200) {
+    if (deleteImage) {
       database.query(
         "DELETE FROM images WHERE imgur_id = $1",
         [hash],
