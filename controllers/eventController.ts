@@ -19,6 +19,28 @@ export const getEventsList = (req: Request, res: Response) => {
   }
 };
 
+export const getEventById = (req: Request, res: Response) => {
+  try {
+    const {id} = req.params
+
+    database.query('SELECT  a.title, a.description, b.imgur_id, b.imgur_delete_hash, b.imgur_link FROM events a INNER JOIN images b ON a.id = b.event_id WHERE a.id = $1', 
+    [id], 
+    (err, results) => {
+      if(err) {
+        return res.status(400).json(err);
+      }
+
+      if(!results.rows[0]) {
+        return res.status(404).json({message: 'Evento não encontrado!'})
+      }
+
+      return res.status(200).json(results.rows[0])
+    })
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+}
+
 export const createEvent = async (req: Request, res: Response) => {
   try {
     const { title, description, image_hash, image_delete_hash, image_link } = req.body;
@@ -43,6 +65,36 @@ export const createEvent = async (req: Request, res: Response) => {
     return res.status(400).json(error);
   }
 };
+
+export const updateEventById = async(req: Request, res: Response) => {
+  try {
+    const {id} = req.params
+    const { title, description, image_hash, image_delete_hash, image_link } = req.body;
+    
+    database.query(
+      "UPDATE events SET title = $1, description = $2 WHERE id = $3",
+      [title, description, id],
+      async (err: any, results: any) => {
+        if(err) {
+          return res.status(400).json(err)
+        }
+
+        const {rowCount: eventRowUpdate} = results
+
+        if(eventRowUpdate >= 1) {
+          const {rowCount: imageRowUpdate} = await database.query("UPDATE images SET imgur_id = $1, imgur_delete_hash = $2, imgur_link = $3 WHERE event_id = $4",
+          [image_hash, image_delete_hash, image_link, id])
+  
+          if(!err && imageRowUpdate >= 1) {
+            return res.status(200).json({message: "Evento atualizado com sucesso!"})
+          }
+        }
+      }
+    )
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+}
 
 export const deleteEvent = async (req: Request, res: Response) => {
   try {
