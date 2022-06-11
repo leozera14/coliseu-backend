@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { database } from "../database/connection";
 import bcrypt from "bcrypt";
+import { createToken } from "../utils/jwt";
+import jwtConfig from "../config/jwt";
+import { setCache } from "../utils/cache";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -50,9 +53,9 @@ export const login = async (req: Request, res: Response) => {
       throw new Error("Usuário não encontrado!");
     }
 
-    bcrypt.compare(password, user.password, (err: any, results: any) => {
+    bcrypt.compare(password, user.password, async (err: any, results: any) => {
       if (err) {
-        return res.status(400).json(err);
+        return res.status(401).json({error: 'Unauthorized!'});
       }
 
       if (!results) {
@@ -61,11 +64,37 @@ export const login = async (req: Request, res: Response) => {
           .json("Usuário ou senha incorretos, tente novamente...");
       }
 
+      const token = createToken(String(user.id))
+
       return res
         .status(200)
-        .json(`Usuário ${username} autenticado com sucesso!`);
+        .json({
+          user: user.username,
+          access_token: token,
+          expires_in: jwtConfig.ttl,
+          token_type: 'Bearer'
+        });
     });
   } catch (error: any) {
     return res.status(400).json(error);
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const token = req.body.token
+
+    const now = new Date();
+
+    const expire = new Date(req.body.user.exp)
+
+    const milliseconds = now.getTime() - expire.getTime()
+
+    await setCache(token, token, milliseconds)
+
+    return res.json({message: 'Logged out successfully!'})
+
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+}
