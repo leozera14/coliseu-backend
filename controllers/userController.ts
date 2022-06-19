@@ -3,7 +3,6 @@ import { database } from "../database/connection";
 import bcrypt from "bcrypt";
 import { createToken } from "../utils/jwt";
 import jwtConfig from "../config/jwt";
-import { setCache } from "../utils/cache";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -79,22 +78,3 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).json(error);
   }
 };
-
-export const logout = async (req: Request, res: Response) => {
-  try {
-    const token = req.body.token
-
-    const now = new Date();
-
-    const expire = new Date(req.body.user.exp)
-
-    const milliseconds = now.getTime() - expire.getTime()
-
-    await setCache(token, token, milliseconds)
-
-    return res.json({message: 'Logged out successfully!'})
-
-  } catch (error) {
-    return res.status(400).json(error)
-  }
-}

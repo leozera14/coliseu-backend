@@ -1,4 +1,4 @@
 export interface IJwtConfig {
   secret: string,
-  ttl: number
+  ttl: string | number
 }
